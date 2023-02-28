@@ -1,0 +1,139 @@
+Program:
+	Functions
+
+Functions:
+	Function Functions
+	| Function
+
+Paramete_list:
+	| Paramete_list , TYPE id
+	| TYPE id
+
+Function:
+	TYPE id ( Paramete_list ) Create_variable Function_block
+
+Create_variable:
+    22 |
+
+TYPE:
+	int
+	| float
+	| void
+
+Function_block:
+    { }
+    | Statement_block 21
+
+Statement_block:
+	{ variable_new_layer Statements } 24
+	| { }
+
+variable_new_layer:
+    23 |
+
+Statements:
+	Statements M Statement 20
+	| Statement 1
+
+Statement:
+	Declarative_sentence 1
+	| Assignment_sentence 1
+	| Call_Function_sentence 1
+	| If_sentence 1
+	| While_sentence 1
+	| Return_sentence 1
+	| Statement_block 1
+
+Call_Function_sentence:
+	id ( Parameter_list ) ;
+
+Declarative_sentence:
+	TYPE id ; 5
+	| TYPE id = EQUATION ; 6
+
+Assignment_sentence:
+	id = EQUATION ; 4
+
+Return_sentence:
+	return EQUATION ;
+	| return ;
+
+While_sentence:
+	while M ( E ) M Statement_block 19
+
+If_sentence:
+	if ( E ) M Statement_block 17
+	| if ( E ) M Statement_block N else M Statement_block 18
+
+E:
+    C_and or M C_and 9
+	| C_and 1
+
+C_and:
+    C_not and M C_not 10
+    | C_not 1
+
+C_not:
+    not C_end 11
+    | C_end 1
+
+C_end:
+    C_ADD relop C_ADD 14
+    | C_ADD 16
+
+C_ADD:
+    C_ADD + C_MUL 3
+    | C_ADD - C_MUL 3
+    | C_MUL 1
+
+C_MUL:
+    C_MUL * C_END 3
+    | C_MUL / C_END 3
+    | C_END 1
+
+C_END:
+    ( C_ADD ) 2
+    | id 7
+    | const_int 15
+
+M:
+	13 |
+
+N:
+	12 |
+
+EQUATION:
+	EQUATION or EQUATION 3
+	| EQUATION and EQUATION 3
+	| not EQUATION 3
+	| E_Expression 1
+
+E_Expression:
+	| E_Add_Expression 1
+	| E_Add_Expression relop E_Add_Expression 3
+
+E_Add_Expression:
+	E_Item 1
+	| E_Item + E_Add_Expression 3
+	| E_Item - E_Add_Expression 3
+
+E_Item:
+	E_divisor 1
+	| E_divisor * E_divisor 3
+	| E_divisor / E_divisor 3
+
+E_divisor:
+	( EQUATION )  2
+	| id 7
+	| const_int 15
+
+relop:
+	> 8
+	| >= 8
+	| < 8
+	| <= 8
+	| == 8
+	| != 8
+
+
+
