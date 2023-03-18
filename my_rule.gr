@@ -6,11 +6,17 @@ Functions:
 	| Function
 
 Paramete_list:
-	| Paramete_list , TYPE id
-	| TYPE id
+	25 | Paramete_list , TYPE id 26
+	| TYPE id 27
+
+Call_list:
+    28 | id 29
+    | EQUATION 29
+    | Call_list , id 30
+    | Call_list , EQUATION 30
 
 Function:
-	TYPE id ( Paramete_list ) Create_variable Function_block
+	TYPE id ( Paramete_list ) Create_variable Function_block 32
 
 Create_variable:
     22 |
@@ -45,7 +51,10 @@ Statement:
 	| Statement_block 1
 
 Call_Function_sentence:
-	id ( Parameter_list ) ;
+	In_Call_Function_sentence ;
+
+In_Call_Function_sentence:
+	id ( Call_list ) 31
 
 Declarative_sentence:
 	TYPE id ; 5
@@ -55,7 +64,7 @@ Assignment_sentence:
 	id = EQUATION ; 4
 
 Return_sentence:
-	return EQUATION ;
+	return EQUATION ; 33
 	| return ;
 
 While_sentence:
@@ -107,6 +116,7 @@ EQUATION:
 	| EQUATION and EQUATION 3
 	| not EQUATION 3
 	| E_Expression 1
+	| In_Call_Function_sentence 1
 
 E_Expression:
 	| E_Add_Expression 1

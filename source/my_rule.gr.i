@@ -3,10 +3,15 @@ AAA                         ->          Program 0
 Program                     ->          Functions 0
 Functions                   ->          Function Functions 0
 Functions                   ->          Function 0
-Paramete_list               ->          @ 0
-Paramete_list               ->          Paramete_list , TYPE id 0
-Paramete_list               ->          TYPE id 0
-Function                    ->          TYPE id ( Paramete_list ) Create_variable Function_block 0
+Paramete_list               ->          @ 25
+Paramete_list               ->          Paramete_list , TYPE id 26
+Paramete_list               ->          TYPE id 27
+Call_list                   ->          @ 28
+Call_list                   ->          id 29
+Call_list                   ->          EQUATION 29
+Call_list                   ->          Call_list , id 30
+Call_list                   ->          Call_list , EQUATION 30
+Function                    ->          TYPE id ( Paramete_list ) Create_variable Function_block 32
 Create_variable             ->          @ 22
 TYPE                        ->          int 0
 TYPE                        ->          float 0
@@ -25,11 +30,12 @@ Statement                   ->          If_sentence 1
 Statement                   ->          While_sentence 1
 Statement                   ->          Return_sentence 1
 Statement                   ->          Statement_block 1
-Call_Function_sentence      ->          id ( Parameter_list ) ; 0
+Call_Function_sentence      ->          In_Call_Function_sentence ; 0
+In_Call_Function_sentence   ->          id ( Call_list ) 31
 Declarative_sentence        ->          TYPE id ; 5
 Declarative_sentence        ->          TYPE id = EQUATION ; 6
 Assignment_sentence         ->          id = EQUATION ; 4
-Return_sentence             ->          return EQUATION ; 0
+Return_sentence             ->          return EQUATION ; 33
 Return_sentence             ->          return ; 0
 While_sentence              ->          while M ( E ) M Statement_block 19
 If_sentence                 ->          if ( E ) M Statement_block 17
@@ -57,6 +63,7 @@ EQUATION                    ->          EQUATION or EQUATION 3
 EQUATION                    ->          EQUATION and EQUATION 3
 EQUATION                    ->          not EQUATION 3
 EQUATION                    ->          E_Expression 1
+EQUATION                    ->          In_Call_Function_sentence 1
 E_Expression                ->          @ 0
 E_Expression                ->          E_Add_Expression 1
 E_Expression                ->          E_Add_Expression relop E_Add_Expression 3
@@ -75,7 +82,7 @@ relop                       ->          < 8
 relop                       ->          <= 8
 relop                       ->          == 8
 relop                       ->          != 8
-pdc num: 76
+pdc num: 83
 ================================= tokens =================================
 !=
 (
@@ -102,6 +109,7 @@ C_and
 C_end
 C_not
 Call_Function_sentence
+Call_list
 Create_variable
 Declarative_sentence
 E
@@ -114,10 +122,10 @@ Function
 Function_block
 Functions
 If_sentence
+In_Call_Function_sentence
 M
 N
 Paramete_list
-Parameter_list
 Program
 Return_sentence
 Statement
@@ -141,7 +149,7 @@ void
 while
 {
 }
-token num: 64
+token num: 65
 ================================= NonTerminals No =================================
 AAA                 :           0 
 Assignment_sentence :           1 
@@ -152,31 +160,33 @@ C_and               :           5
 C_end               :           6 
 C_not               :           7 
 Call_Function_sentence:           8 
-Create_variable     :           9 
-Declarative_sentence:           10 
-E                   :           11 
-EQUATION            :           12 
-E_Add_Expression    :           13 
-E_Expression        :           14 
-E_Item              :           15 
-E_divisor           :           16 
-Function            :           17 
-Function_block      :           18 
-Functions           :           19 
-If_sentence         :           20 
-M                   :           21 
-N                   :           22 
-Paramete_list       :           23 
-Program             :           24 
-Return_sentence     :           25 
-Statement           :           26 
-Statement_block     :           27 
-Statements          :           28 
-TYPE                :           29 
-While_sentence      :           30 
-relop               :           31 
-variable_new_layer  :           32 
-nonterm num: 33
+Call_list           :           9 
+Create_variable     :           10 
+Declarative_sentence:           11 
+E                   :           12 
+EQUATION            :           13 
+E_Add_Expression    :           14 
+E_Expression        :           15 
+E_Item              :           16 
+E_divisor           :           17 
+Function            :           18 
+Function_block      :           19 
+Functions           :           20 
+If_sentence         :           21 
+In_Call_Function_sentence:           22 
+M                   :           23 
+N                   :           24 
+Paramete_list       :           25 
+Program             :           26 
+Return_sentence     :           27 
+Statement           :           28 
+Statement_block     :           29 
+Statements          :           30 
+TYPE                :           31 
+While_sentence      :           32 
+relop               :           33 
+variable_new_layer  :           34 
+nonterm num: 35
 ================================= Terminals No =================================
 !=                  :           0 
 (                   :           1 
@@ -194,22 +204,21 @@ nonterm num: 33
 >                   :           13 
 >=                  :           14 
 @                   :           15 
-Parameter_list      :           16 
-and                 :           17 
-const_int           :           18 
-else                :           19 
-float               :           20 
-id                  :           21 
-if                  :           22 
-int                 :           23 
-not                 :           24 
-or                  :           25 
-return              :           26 
-void                :           27 
-while               :           28 
-{                   :           29 
-}                   :           30 
-term num: 31
+and                 :           16 
+const_int           :           17 
+else                :           18 
+float               :           19 
+id                  :           20 
+if                  :           21 
+int                 :           22 
+not                 :           23 
+or                  :           24 
+return              :           25 
+void                :           26 
+while               :           27 
+{                   :           28 
+}                   :           29 
+term num: 30
 ================================= First Sets =================================
 !=                  :           != 
 (                   :           ( 
@@ -236,6 +245,7 @@ C_and               :           ( const_int id not
 C_end               :           ( const_int id 
 C_not               :           ( const_int id not 
 Call_Function_sentence:           id 
+Call_list           :           ( @ const_int id not 
 Create_variable     :           @ 
 Declarative_sentence:           float int void 
 E                   :           ( const_int id not 
@@ -248,10 +258,10 @@ Function            :           float int void
 Function_block      :           { 
 Functions           :           float int void 
 If_sentence         :           if 
+In_Call_Function_sentence:           id 
 M                   :           @ 
 N                   :           @ 
 Paramete_list       :           @ float int void 
-Parameter_list      :           Parameter_list 
 Program             :           float int void 
 Return_sentence     :           return 
 Statement           :           float id if int return void while { 
@@ -285,18 +295,20 @@ C_and               :           ) or
 C_end               :           ) and or 
 C_not               :           ) and or 
 Call_Function_sentence:           float id if int return void while { } 
+Call_list           :           ) , 
 Create_variable     :           { 
 Declarative_sentence:           float id if int return void while { } 
 E                   :           ) 
-EQUATION            :           ) ; and or 
-E_Add_Expression    :           != ) ; < <= == > >= and or 
-E_Expression        :           ) ; and or 
-E_Item              :           != ) + - ; < <= == > >= and or 
-E_divisor           :           != ) * + - / ; < <= == > >= and or 
+EQUATION            :           ) , ; and or 
+E_Add_Expression    :           != ) , ; < <= == > >= and or 
+E_Expression        :           ) , ; and or 
+E_Item              :           != ) + , - ; < <= == > >= and or 
+E_divisor           :           != ) * + , - / ; < <= == > >= and or 
 Function            :           $ float int void 
 Function_block      :           $ float int void 
 Functions           :           $ 
 If_sentence         :           float id if int return void while { } 
+In_Call_Function_sentence:           ) , ; and or 
 M                   :           ( const_int float id if int not return void while { 
 N                   :           else 
 Paramete_list       :           ) , 

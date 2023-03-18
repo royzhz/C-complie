@@ -24,6 +24,7 @@ LR_analyse::LR_analyse(){
     load_languange();
     load_action();
     load_goto();
+
 }
 
 progamma_tree* LR_analyse::analyse_sentence(vector<parsetoken> sentence){
@@ -70,13 +71,13 @@ progamma_tree* LR_analyse::analyse_sentence(vector<parsetoken> sentence){
 
         if (new_state.swift == ACC) {
             out_commond.push_back("success");
-            for (int show_int = 0; show_int < out_symbol_stack.size(); show_int++) {
-                cout << out_state_stack[show_int] << out_symbol_stack[show_int] << left_symbol[show_int]
-                     << out_commond[show_int] << endl;
-            }
+//            for (int show_int = 0; show_int < out_symbol_stack.size(); show_int++) {
+//                cout << out_state_stack[show_int] << out_symbol_stack[show_int] << left_symbol[show_int]
+//                     << out_commond[show_int] << endl;
+//            }
 
-            for(auto i : Intermediate_code)
-                cout<<i<<endl;
+//            for(auto i : Intermediate_code)
+//                cout<<i<<endl;
             return stack_node.back();
         }
 
@@ -240,7 +241,7 @@ int LR_analyse::do_function(int oper, vector<parsetoken>& string_stack, const pa
     }
     else if (oper == 12) {//N->@
         ready_to_push.set("nextlist", to_string(nextquad));
-        emit("j", "-", "-", "0");
+        emit("j", "-", "-", "-1");
     }
     else if (oper == 13) {//M->@
         ready_to_push.set("quad",to_string(nextquad));
@@ -252,8 +253,8 @@ int LR_analyse::do_function(int oper, vector<parsetoken>& string_stack, const pa
         string operater = relop.get("oper");
         ready_to_push.set("truelist", to_string(nextquad));
         ready_to_push.set("falselist", to_string(nextquad + 1));
-        emit("j"+operater, id1.get("place"), id2.get("place"), "0");//result为0自动作为链表
-        emit("j", "-", "-", "0");
+        emit("j"+operater, id1.get("place"), id2.get("place"), "-1");//result为0自动作为链表
+        emit("j", "-", "-", "-1");
     }
     else if (oper == 15) {//E->const_int
         auto const_int = item[0];
@@ -267,8 +268,8 @@ int LR_analyse::do_function(int oper, vector<parsetoken>& string_stack, const pa
         auto id = item[0];
         ready_to_push.set("truelist", to_string(nextquad));
         ready_to_push.set("falselist", to_string(nextquad + 1));
-        emit("jnz", id.get("place"), "-", "0");
-        emit("j", "-", "-", "0");
+        emit("jnz", id.get("place"), "-", "-1");
+        emit("j", "-", "-", "-1");
     }
     else if (oper == 17){//控制s->if ( E ) M Statement_block
         auto E = item[3];
@@ -293,8 +294,8 @@ int LR_analyse::do_function(int oper, vector<parsetoken>& string_stack, const pa
         auto M2 = item[1];
         auto E = item[3];
         auto M1 = item[5];
-        backpatch(E.get("truelist"), M2.get("quad"));
         backpatch(Statement_block.get("nextlist"), M1.get("quad"));
+        backpatch(E.get("truelist"), M2.get("quad"));
         ready_to_push.set("nextlist", E.get("falselist"));
         emit("j", "-", "-", M1.get("quad"));
     }
@@ -310,9 +311,10 @@ int LR_analyse::do_function(int oper, vector<parsetoken>& string_stack, const pa
         auto s=item[0];
         backpatch(s.get("nextlist"),to_string(nextquad));
     }
-    else if(oper==22){//Create_variable,新函数新建变量表,输出函数名称
-        emit("func","-","-",string_stack[string_stack.size()-4].get("name"));
-        variable_table.new_function();
+    else if(oper==22){//Create_variable,输出函数名称,建立函数表和类型
+        //emit("func","-","-",string_stack[string_stack.size()-4].get("name"));
+        function_name=string_stack[string_stack.size()-4].get("name");
+        //variable_table.new_function();
     }
     else if(oper==23){//进入代码块，新建变量层
         variable_table.newlayer();
@@ -321,6 +323,86 @@ int LR_analyse::do_function(int oper, vector<parsetoken>& string_stack, const pa
         auto Statements=item[1];
         variable_table.poplayer();
         ready_to_push.set("nextlist",Statements.get("nextlist"));
+    }
+    else if(oper==25){//Paramete_list:->@新函数新建变量表,
+        ready_to_push.set("Paramete_list","0");//将vector<string>，表示输入的类型，其地址转化为字符串存入list
+        variable_table.new_function();
+    }
+    else if(oper==26){//Paramete_list:->Paramete_list , TYPE id
+        auto Paramete_list=item[3];
+        auto Type=item[1];
+        auto id = item[0];
+
+        auto new_location = variable_table.newvar(id.get("name"));
+
+        vector<string> * list=(vector<string> *)stoll(Paramete_list.get("Paramete_list"));
+        list->push_back(new_location);
+        ready_to_push.set("Paramete_list", to_string((long long)(list)));
+    }
+    else if(oper==27){//Paramete_list-> TYPE id新函数新建变量表,
+        auto Type=item[1];
+        auto id = item[0];
+        variable_table.new_function();
+        auto new_location = variable_table.newvar(id.get("name"));
+        auto * list=new vector<string>;
+        list->push_back(new_location);
+        ready_to_push.set("Paramete_list", to_string((long long)(list)));
+    }
+    else if(oper==28){//Call_list空
+        //声明一个list来存所有的参数
+        ready_to_push.set("Call_list","0");
+    }
+    else if(oper==29){//Call_list->id
+        auto id=item[0];
+
+        string p=id.get("place");
+        if(p.empty())
+            p = variable_table.lookup(id.get("name"));
+
+        if (p.empty()) {
+            cout << "未知的变量" << id.get("name") << endl;
+            return ERR;
+        }
+
+        auto * list=new vector<string>;
+        list->push_back(p);
+        ready_to_push.set("Call_list", to_string((long long)(list)));
+    }
+    else if(oper==30){//Call_list->Call_list , id
+        auto Call_list=item[2];
+        auto id=item[0];
+
+        string p=id.get("place");
+        if(p.empty())
+            p = variable_table.lookup(id.get("name"));
+
+        if (p.empty()) {
+            cout << "未知的变量" << id.get("name") << endl;
+            return ERR;
+        }
+
+        //cout<<Paramete_list.get("Paramete_list");
+        vector<string> * list=(vector<string> *)stoll(Call_list.get("Call_list"));
+        list->push_back(p);
+        ready_to_push.set("Call_list", to_string((long long)(list)));
+    }
+    else if(oper==31)//Call_Function_sentence:->  id ( Call_list ),输出的call最后一项是calllist的元素数组地址,作为E来处理
+    {
+        auto id=item[3];
+        auto Call_list=item[1];
+        auto tmp=variable_table.newtemp();
+
+        emit("call",id.get("name"),tmp,Call_list.get("Call_list"));
+        ready_to_push.set("place",tmp);
+    }
+    else if(oper==32){//建立函数表s ->TYPE id ( Paramete_list ) Create_variable Function_block
+        auto Paramete_list=item[3];
+        auto id=item[5];
+        function_table[id.get("name")]=(vector<string>*)(stoll(Paramete_list.get("Paramete_list")));
+    }
+    else if(oper==33){//return e ;
+        auto e=item[1];
+        emit("return","-","-",e.get("place"));
     }
     string_stack.push_back(ready_to_push);
     return ACC;
@@ -467,14 +549,19 @@ string show_sentence(const vector<string>& sentence, int location) {//展示
 
 ostream& operator<<(ostream& out, four_tuple& tmp)//输出四元式
 {
-    cout<<setw(3)<<tmp.op<<","<<setw(3)<<tmp.arg1<<","<<setw(3)<<tmp.arg2<<","<<setw(3)<<tmp.result;
+    cout<<setw(5)<<tmp.line_number<<":"<<setw(5)<<tmp.op<<","<<setw(5)<<tmp.arg1<<","<<setw(5)<<tmp.arg2<<","<<setw(5)<<tmp.result;
     return out;
 }
 
 void LR_analyse::emit(const string& op, const string& arg1, const string& arg2, const string& result)//发射四元式
 {
+    four_tuple temp{to_string(nextquad),op,arg1,arg2,result };
+    if(function_name!=""){
+        temp.line_number=function_name;
+        function_name="";
+        temp.function=true;
+    }
     nextquad += 1;
-    four_tuple temp{ op,arg1,arg2,result };
     Intermediate_code.push_back(temp);
     //cout<<setw(3)<<op<<","<<setw(3)<<arg1<<","<<setw(3)<<arg2<<","<<setw(3)<<result<<endl;
 }
@@ -483,9 +570,11 @@ void LR_analyse::backpatch(const string & merge_father, const string & content)
 {
     if(merge_father.empty() or content.empty())
         return;
+
     int begin=stoi(merge_father);
     int tmp;
-    while (Intermediate_code[begin].result!="0") {
+    while (Intermediate_code[begin].result!="-1") {
+        //cout<<"backpatch"<<merge_father<<" "<<content<<endl;
         tmp=stoi(Intermediate_code[begin].result);
         Intermediate_code[begin].result = content;
         begin = tmp;
@@ -495,12 +584,17 @@ void LR_analyse::backpatch(const string & merge_father, const string & content)
 
 string LR_analyse::merge(const string & merge_father, const string & merge_son)
 {
-    if(merge_father.empty() or merge_son.empty())
-        return "";
+    if(merge_father.empty())
+        return merge_son;
+    else if(merge_son.empty())
+        return merge_father;
+
     //首先找到merge_father链表的尾部
     auto begin= merge_father ;
+
     while(true){
-        if(Intermediate_code[stoi(begin)].result=="0") {//找到结尾
+        //cout<<"merge"<< begin<<endl;
+        if(Intermediate_code[stoi(begin)].result=="-1") {//找到结尾
             Intermediate_code[stoi(begin)].result = merge_son;//接上
             return merge_father;
         }
@@ -511,3 +605,10 @@ string LR_analyse::merge(const string & merge_father, const string & merge_son)
 
 
 
+vector<four_tuple>* LR_analyse::get_four_tuple(){
+    return &Intermediate_code;
+}
+
+map<string,vector<string>*>* LR_analyse::get_function_table(){
+    return &function_table;
+}

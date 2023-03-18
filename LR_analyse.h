@@ -1,5 +1,6 @@
 #pragma once
 #include <vector>
+#include <map>
 #include "actiongoto.h"
 #include "lexical_analyzer.h"
 using namespace std;
@@ -8,12 +9,16 @@ struct progamma_tree {
     vector<progamma_tree*> son;
 };
 
+
+
 class four_tuple {//四元式
 public:
+    string line_number;
     string op;
     string arg1;
     string arg2;
     string result;
+    bool function = false;
     friend ostream& operator<<(ostream& out, four_tuple& tmp);
 };
 
@@ -27,10 +32,19 @@ private:
     vector<int> do_function_list;
 };
 
+class Function//函数类，储存函数类型
+{
+public:
+    string name;
+    vector<string> input;
+};
+
 class LR_analyse {
 public:
     LR_analyse();
     progamma_tree* analyse_sentence(vector<parsetoken> sentence);//主函数，返回progamma_tree?
+    vector<four_tuple>* get_four_tuple();
+    map<string,vector<string>*>* get_function_table();
     vector<string> out_state_stack;
     vector<string> out_symbol_stack;
     vector<string> left_symbol;
@@ -42,6 +56,8 @@ private:
     int nextquad = 0;
     vector<four_tuple> Intermediate_code;
     variable_table_class variable_table;
+    map<string,vector<string>*> function_table;
+    string function_name;
 
     void load_languange();
     void load_action();
